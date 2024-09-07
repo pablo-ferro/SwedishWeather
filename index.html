@@ -24,8 +24,8 @@
     </style>
 </head>
 <body>
-    <h1>Weather in Sweden - Last Day</h1>
-    <p>Click on each location on the map to see the last day's weather data.</p>
+    <h1 id="title">Weather in Sweden - Last Day</h1>
+    <p id="subtitle">Weather in Sweden - September 6th, 2024</p>
 
     <!-- Map Container -->
     <div id="map"></div>
@@ -54,20 +54,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
     <script>
-        // Initialize the map centered on Sweden with zoom restrictions
         var map = L.map('map', {
             center: [63.0, 16.0],
             zoom: 5,
-            minZoom: 5,
-            maxZoom: 8 // Restrict maximum zoom level
+            scrollWheelZoom: false,
+            dragging: false,
+            touchZoom: false,
+            doubleClickZoom: false
         });
 
-        // Set up the map tiles (OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Mapping of parameter codes to weather variables
         const parameterMapping = {
             19: "min temperature",
             20: "max temperature",
@@ -75,45 +74,42 @@
             5: "precipitation"
         };
 
-        // Function to load CSV data
         function loadCsvData() {
             Papa.parse('https://raw.githubusercontent.com/pablo-ferro/SwedishWeather/main/all_data.csv', {
                 download: true,
                 header: true,
                 complete: function(results) {
-                    console.log('CSV Data:', results.data);  // Check if data is loaded
+                    console.log('CSV Data:', results.data);
                     plotMarkers(results.data);
                 },
                 error: function(error) {
-                    console.error('Error loading CSV:', error);  // Log any errors
+                    console.error('Error loading CSV:', error);
                 }
             });
         }
 
-        // Function to get color based on average temperature
-        function getColor(temp) {
-            if (temp <= 0) return '#add8e6'; // Soft Blue for low temperatures
-            if (temp >= 20) return '#f08080'; // Soft Red for high temperatures
-            return '#ffffff'; // White for middle values
+        function interpolateColor(value, min, max) {
+            let ratio = (value - min) / (max - min);
+            let r = Math.round(255 * ratio + 173);
+            let g = Math.round(255 * (1 - ratio) + 216);
+            let b = Math.round(255 * (1 - ratio) + 224);
+            return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // Function to plot markers on the map and update the table
         function plotMarkers(data) {
-            var stations = {};
-            var avgTemps = [];
+            let stations = {};
+            let avgTemps = [];
+            let refDate = "";
 
             data.forEach(function(row) {
                 var stationId = row.station;
                 var parameter = parseInt(row.parameter);
-                var lat = row.latitude ? parseFloat(row.latitude.trim()) : NaN;  // Ensure lat is a number
-                var lon = row.longitude ? parseFloat(row.longitude.trim()) : NaN;  // Ensure lon is a number
-
-                // Log lat and lon values to debug
-                console.log(`Station ${stationId} - Lat: ${lat}, Lon: ${lon}`);
+                var lat = row.latitude ? parseFloat(row.latitude.trim()) : NaN;
+                var lon = row.longitude ? parseFloat(row.longitude.trim()) : NaN;
 
                 if (isNaN(lat) || isNaN(lon)) {
                     console.warn(`Invalid lat/lon for station ${stationId}: (${lat}, ${lon})`);
-                    return; // Skip this row if lat/lon is invalid
+                    return;
                 }
 
                 if (!stations[stationId]) {
@@ -124,31 +120,26 @@
                         data: {}
                     };
                 }
-                
+
                 var variable = parameterMapping[parameter];
                 if (variable) {
                     stations[stationId].data[variable] = row.value;
                 }
-            });
 
-            // Extract average temperatures for color scaling
-            Object.keys(stations).forEach(function(stationId) {
-                var station = stations[stationId];
-                var avgTemp = parseFloat(station.data["avg temperature"]);
-                if (!isNaN(avgTemp)) {
-                    avgTemps.push(avgTemp);
+                if (parameter === 2) {
+                    avgTemps.push(parseFloat(row.value));
+                    if (!refDate) refDate = row.ref;
                 }
             });
 
-            // Determine min and max average temperatures
-            var minTemp = Math.min(...avgTemps);
-            var maxTemp = Math.max(...avgTemps);
+            let minTemp = Math.min(...avgTemps);
+            let maxTemp = Math.max(...avgTemps);
 
-            // Plot markers on the map
+            let bounds = [];
             Object.keys(stations).forEach(function(stationId) {
                 var station = stations[stationId];
                 var avgTemp = parseFloat(station.data["avg temperature"]);
-                var color = getColor(avgTemp);
+                var color = interpolateColor(avgTemp, minTemp, maxTemp);
 
                 var marker = L.marker([station.lat, station.lon], {
                     icon: L.divIcon({
@@ -159,29 +150,35 @@
                     })
                 }).addTo(map);
 
-                var weatherInfo = `
+                marker.bindPopup(`
                     <strong>${station.name}</strong><br>
                     Max Temp: ${station.data["max temperature"] || "N/A"} °C<br>
                     Min Temp: ${station.data["min temperature"] || "N/A"} °C<br>
                     Avg Temp: ${station.data["avg temperature"] || "N/A"} °C<br>
                     Precipitation: ${station.data["precipitation"] || "N/A"} mm
-                `;
-                marker.bindPopup(weatherInfo);
+                `);
+
+                bounds.push([station.lat, station.lon]);
             });
 
-            // Update the table
+            if (bounds.length > 0) {
+                map.fitBounds(bounds);
+            }
+
+            document.getElementById('title').innerText = `Weather in Sweden - ${refDate}`;
+            document.getElementById('subtitle').innerText = `Vädret i Sverige - ${refDate}`;
+            
             updateTable(stations);
         }
 
-        // Function to update the table with weather data
         function updateTable(stations) {
             var tableBody = document.querySelector('#weather-table tbody');
-            tableBody.innerHTML = ''; // Clear existing rows
+            tableBody.innerHTML = '';
 
             Object.keys(stations).forEach(function(stationId) {
                 var station = stations[stationId];
                 var row = document.createElement('tr');
-                
+
                 row.innerHTML = `
                     <td>${station.name}</td>
                     <td>${station.data["max temperature"] || "N/A"}</td>
@@ -194,7 +191,6 @@
             });
         }
 
-        // Load the CSV data when the page is loaded
         loadCsvData();
     </script>
 </body>
