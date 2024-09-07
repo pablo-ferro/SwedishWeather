@@ -26,6 +26,7 @@
 <body>
     <h1 id="title">Weather in Sweden - Last Day</h1>
     <p id="subtitle">Weather in Sweden - September 6th, 2024</p>
+    <p>Click on each location on the map to see the last day's weather data.</p>
 
     <!-- Map Container -->
     <div id="map"></div>
@@ -56,7 +57,7 @@
     <script>
         var map = L.map('map', {
             center: [63.0, 16.0],
-            zoom: 5,
+            zoom: 4,
             scrollWheelZoom: false,
             dragging: false,
             touchZoom: false,
@@ -90,9 +91,9 @@
 
         function interpolateColor(value, min, max) {
             let ratio = (value - min) / (max - min);
-            let r = Math.round(255 * ratio + 173);
-            let g = Math.round(255 * (1 - ratio) + 216);
-            let b = Math.round(255 * (1 - ratio) + 224);
+            let r = Math.round(139 + ratio * (255 - 139));  // Darker red
+            let g = Math.round(0 + ratio * (255 - 0));      // Darker green to red
+            let b = Math.round(255 + ratio * (224 - 255));  // Darker blue
             return `rgb(${r}, ${g}, ${b})`;
         }
 
