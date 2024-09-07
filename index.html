@@ -51,7 +51,8 @@
                 header: true,
                 complete: function(results) {
                     var data = results.data;
-                        plotMarkers(data);
+                    console.log(data);  // Check if the data is being loaded
+                    plotMarkers(data);
                 }
             });
 
@@ -85,7 +86,15 @@
             // Plot markers
             Object.keys(stations).forEach(function(stationId) {
                 var station = stations[stationId];
-                var marker = L.marker([station.lat, station.lon]).addTo(map);
+                var marker = L.marker([station.lat, station.lon], {icon: L.divIcon({
+                        className: 'custom-icon',
+                        html: `<div style="background-color: red; color: white; text-align: center; line-height: 20px; width: 40px; height: 40px; border-radius: 50%; font-size: 14px;">•</div>`,
+                        iconSize: [40, 40],  // Size of the marker
+                        iconAnchor: [20, 20]  // Anchor point of the icon
+                    })
+                }).addTo(map);
+                console.log(station.lat, station.lon);  // Check if lat/lon values are correct
+
                 
                 // Extract weather data for this station
                 var weatherInfo = `
