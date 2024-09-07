@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweden Weather - Last Day</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <!-- Custom CSS -->
+    <style>
+        #map { height: 600px; width: 100%; }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Weather in Sweden - Last Day</h1>
+    <p>Click on each location on the map to see the last day's weather data.</p>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- PapaParse to load CSV data -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <script>
+        // Initialize the map centered on Sweden
+        var map = L.map('map').setView([63.0, 16.0], 5); // Centering the map around Sweden
+
+        // Set up the map tiles (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Mapping of parameter codes to weather variables
+        const parameterMapping = {
+            19: "min temperature",
+            20: "max temperature",
+            2: "avg temperature",
+            5: "precipitation"
+        };
+
+        // Function to load CSV data
+        function loadCsvData() {
+            Papa.parse('all_data.csv', {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    var data = results.data;
+                    plotMarkers(data);
+                }
+            });
+        }
+
+        // Function to plot markers on the map
+        function plotMarkers(data) {
+            // Group data by station
+            var stations = {};
+
+            data.forEach(function(row) {
+                var stationId = row.station;
+                var parameter = parseInt(row.parameter);
+
+                if (!stations[stationId]) {
+                    stations[stationId] = {
+                        name: row.name,
+                        lat: parseFloat(row.latitud),
+                        lon: parseFloat(row.longitude),
+                        data: {}
+                    };
+                }
+                
+                // Map the parameter code to the weather variable name and store its value
+                var variable = parameterMapping[parameter];
+                if (variable) {
+                    stations[stationId].data[variable] = row.value;
+                }
+            });
+
+            // Plot markers
+            Object.keys(stations).forEach(function(stationId) {
+                var station = stations[stationId];
+                var marker = L.marker([station.lat, station.lon]).addTo(map);
+                
+                // Extract weather data for this station
+                var weatherInfo = `
+                    <strong>${station.name}</strong><br>
+                    Max Temp: ${station.data["max temperature"] || "N/A"} °C<br>
+                    Min Temp: ${station.data["min temperature"] || "N/A"} °C<br>
+                    Avg Temp: ${station.data["avg temperature"] || "N/A"} °C<br>
+                    Precipitation: ${station.data["precipitation"] || "N/A"} mm
+                `;
+
+                marker.bindPopup(weatherInfo);
+            });
+        }
+
+        // Load the CSV data when the page is loaded
+        loadCsvData();
+    </script>
+</body>
+</html>
