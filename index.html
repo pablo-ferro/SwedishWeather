@@ -11,7 +11,7 @@
     <!-- Custom CSS -->
     <style>
         #map { height: 600px; width: 100%; }
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        body { font-family: 'Futura', sans-serif; text-align: center; padding: 20px; }
         h1 { color: #333; }
         #table-container { margin-top: 20px; padding: 0 10px; }
         #weather-table { width: 100%; border-collapse: collapse; }
@@ -54,8 +54,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
     <script>
-        // Initialize the map centered on Sweden
-        var map = L.map('map').setView([63.0, 16.0], 5); // Centering the map around Sweden
+        // Initialize the map centered on Sweden with zoom restrictions
+        var map = L.map('map', {
+            center: [63.0, 16.0],
+            zoom: 5,
+            minZoom: 5,
+            maxZoom: 8 // Restrict maximum zoom level
+        });
 
         // Set up the map tiles (OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -85,15 +90,23 @@
             });
         }
 
+        // Function to get color based on average temperature
+        function getColor(temp) {
+            if (temp <= 0) return '#add8e6'; // Soft Blue for low temperatures
+            if (temp >= 20) return '#f08080'; // Soft Red for high temperatures
+            return '#ffffff'; // White for middle values
+        }
+
         // Function to plot markers on the map and update the table
         function plotMarkers(data) {
             var stations = {};
+            var avgTemps = [];
 
             data.forEach(function(row) {
                 var stationId = row.station;
                 var parameter = parseInt(row.parameter);
-                var lat = parseFloat(row.latitude);
-                var lon = parseFloat(row.longitude);
+                var lat = parseFloat(row.latitud.trim());
+                var lon = parseFloat(row.longitude.trim());
 
                 // Log lat and lon values to debug
                 console.log(`Station ${stationId} - Lat: ${lat}, Lon: ${lon}`);
@@ -118,18 +131,34 @@
                 }
             });
 
+            // Extract average temperatures for color scaling
+            Object.keys(stations).forEach(function(stationId) {
+                var station = stations[stationId];
+                var avgTemp = parseFloat(station.data["avg temperature"]);
+                if (!isNaN(avgTemp)) {
+                    avgTemps.push(avgTemp);
+                }
+            });
+
+            // Determine min and max average temperatures
+            var minTemp = Math.min(...avgTemps);
+            var maxTemp = Math.max(...avgTemps);
+
             // Plot markers on the map
             Object.keys(stations).forEach(function(stationId) {
                 var station = stations[stationId];
+                var avgTemp = parseFloat(station.data["avg temperature"]);
+                var color = getColor(avgTemp);
+
                 var marker = L.marker([station.lat, station.lon], {
                     icon: L.divIcon({
                         className: 'custom-icon',
-                        html: `<div style="background-color: red; color: white; text-align: center; line-height: 40px; width: 40px; height: 40px; border-radius: 50%; font-size: 20px;">•</div>`,
-                        iconSize: [40, 40],
-                        iconAnchor: [20, 20]
+                        html: `<div style="background-color: ${color}; color: black; text-align: center; line-height: 20px; width: 20px; height: 20px; border-radius: 50%; font-size: 10px;">•</div>`,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
                     })
                 }).addTo(map);
-                
+
                 var weatherInfo = `
                     <strong>${station.name}</strong><br>
                     Max Temp: ${station.data["max temperature"] || "N/A"} °C<br>
