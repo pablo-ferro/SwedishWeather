@@ -57,7 +57,7 @@
     <script>
         var map = L.map('map', {
             center: [63.0, 16.0],
-            zoom: 4,
+            zoom: 5,
             scrollWheelZoom: false,
             dragging: false,
             touchZoom: false,
@@ -89,13 +89,24 @@
             });
         }
 
-        function interpolateColor(value, min, max) {
-            let ratio = (value - min) / (max - min);
-            let r = Math.round(139 + ratio * (255 - 139));  // Darker red
-            let g = Math.round(0 + ratio * (255 - 0));      // Darker green to red
-            let b = Math.round(255 + ratio * (224 - 255));  // Darker blue
-            return `rgb(${r}, ${g}, ${b})`;
-        }
+function interpolateColor(value, min, max) {
+    let ratio = (value - min) / (max - min);
+    let r, g, b;
+
+    if (ratio <= 0.5) {
+        // Interpolate from soft blue to white
+        r = Math.round(100 + ratio * (255 - 100));  // From blue to white
+        g = Math.round(150 + ratio * (255 - 150));  // From blue to white
+        b = Math.round(255 + ratio * (255 - 255));  // From blue to white
+    } else {
+        // Interpolate from white to soft red
+        r = Math.round(255 + (ratio - 0.5) * (255 - 255));  // From white to red
+        g = Math.round(255 + (ratio - 0.5) * (100 - 255));  // From white to red
+        b = Math.round(255 + (ratio - 0.5) * (100 - 255));  // From white to red
+    }
+
+    return `rgb(${r}, ${g}, ${b})`;
+}
 
         function plotMarkers(data) {
             let stations = {};
