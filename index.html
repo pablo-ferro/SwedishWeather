@@ -105,8 +105,8 @@
             data.forEach(function(row) {
                 var stationId = row.station;
                 var parameter = parseInt(row.parameter);
-                var lat = parseFloat(row.latitude.trim());
-                var lon = parseFloat(row.longitude.trim());
+                var lat = row.latitude ? parseFloat(row.latitude.trim()) : NaN;  // Ensure lat is a number
+                var lon = row.longitude ? parseFloat(row.longitude.trim()) : NaN;  // Ensure lon is a number
 
                 // Log lat and lon values to debug
                 console.log(`Station ${stationId} - Lat: ${lat}, Lon: ${lon}`);
