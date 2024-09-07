@@ -92,12 +92,22 @@
             data.forEach(function(row) {
                 var stationId = row.station;
                 var parameter = parseInt(row.parameter);
+                var lat = parseFloat(row.latitud);
+                var lon = parseFloat(row.longitude);
+
+                // Log lat and lon values to debug
+                console.log(`Station ${stationId} - Lat: ${lat}, Lon: ${lon}`);
+
+                if (isNaN(lat) || isNaN(lon)) {
+                    console.warn(`Invalid lat/lon for station ${stationId}: (${lat}, ${lon})`);
+                    return; // Skip this row if lat/lon is invalid
+                }
 
                 if (!stations[stationId]) {
                     stations[stationId] = {
                         name: row.name,
-                        lat: parseFloat(row.latitud),
-                        lon: parseFloat(row.longitude),
+                        lat: lat,
+                        lon: lon,
                         data: {}
                     };
                 }
