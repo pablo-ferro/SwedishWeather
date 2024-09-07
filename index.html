@@ -13,6 +13,14 @@
         #map { height: 600px; width: 100%; }
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         h1 { color: #333; }
+        #table-container { margin-top: 20px; padding: 0 10px; }
+        #weather-table { width: 100%; border-collapse: collapse; }
+        #weather-table th, #weather-table td { border: 1px solid #ddd; padding: 8px; }
+        #weather-table th { background-color: #f4f4f4; text-align: left; }
+        #weather-table td { text-align: center; }
+        .custom-icon {
+            font-family: 'Futura', sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -21,6 +29,24 @@
 
     <!-- Map Container -->
     <div id="map"></div>
+
+    <!-- Table Container -->
+    <div id="table-container">
+        <table id="weather-table">
+            <thead>
+                <tr>
+                    <th>Station</th>
+                    <th>Max Temp (°C)</th>
+                    <th>Min Temp (°C)</th>
+                    <th>Avg Temp (°C)</th>
+                    <th>Precipitation (mm)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
 
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -55,12 +81,10 @@
                     plotMarkers(data);
                 }
             });
-
         }
 
-        // Function to plot markers on the map
+        // Function to plot markers on the map and update the table
         function plotMarkers(data) {
-            // Group data by station
             var stations = {};
 
             data.forEach(function(row) {
@@ -76,27 +100,24 @@
                     };
                 }
                 
-                // Map the parameter code to the weather variable name and store its value
                 var variable = parameterMapping[parameter];
                 if (variable) {
                     stations[stationId].data[variable] = row.value;
                 }
             });
 
-            // Plot markers
+            // Plot markers on the map
             Object.keys(stations).forEach(function(stationId) {
                 var station = stations[stationId];
-                var marker = L.marker([station.lat, station.lon], {icon: L.divIcon({
+                var marker = L.marker([station.lat, station.lon], {
+                    icon: L.divIcon({
                         className: 'custom-icon',
-                        html: `<div style="background-color: red; color: white; text-align: center; line-height: 20px; width: 40px; height: 40px; border-radius: 50%; font-size: 14px;">•</div>`,
-                        iconSize: [40, 40],  // Size of the marker
-                        iconAnchor: [20, 20]  // Anchor point of the icon
+                        html: `<div style="background-color: red; color: white; text-align: center; line-height: 40px; width: 40px; height: 40px; border-radius: 50%; font-size: 20px;">•</div>`,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 20]
                     })
                 }).addTo(map);
-                console.log(station.lat, station.lon);  // Check if lat/lon values are correct
-
                 
-                // Extract weather data for this station
                 var weatherInfo = `
                     <strong>${station.name}</strong><br>
                     Max Temp: ${station.data["max temperature"] || "N/A"} °C<br>
@@ -104,8 +125,31 @@
                     Avg Temp: ${station.data["avg temperature"] || "N/A"} °C<br>
                     Precipitation: ${station.data["precipitation"] || "N/A"} mm
                 `;
-
                 marker.bindPopup(weatherInfo);
+            });
+
+            // Update the table
+            updateTable(stations);
+        }
+
+        // Function to update the table with weather data
+        function updateTable(stations) {
+            var tableBody = document.querySelector('#weather-table tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            Object.keys(stations).forEach(function(stationId) {
+                var station = stations[stationId];
+                var row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${station.name}</td>
+                    <td>${station.data["max temperature"] || "N/A"}</td>
+                    <td>${station.data["min temperature"] || "N/A"}</td>
+                    <td>${station.data["avg temperature"] || "N/A"}</td>
+                    <td>${station.data["precipitation"] || "N/A"}</td>
+                `;
+
+                tableBody.appendChild(row);
             });
         }
 
