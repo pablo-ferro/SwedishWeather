@@ -10,29 +10,40 @@
 
     <!-- Custom CSS -->
     <style>
-        #map { height: 600px; width: 100%; margin-bottom: 20px; }
+        #map { height: 600px; width: 100%; }
         body { font-family: 'Futura', sans-serif; text-align: center; padding: 20px; }
         h1 { color: #333; }
         #table-container { margin-top: 20px; display: flex; justify-content: space-between; padding: 0 10px; }
-        #weather-table { width: 45%; border-collapse: collapse; }
+        #weather-table { width: 60%; border-collapse: collapse; }
         #weather-table th, #weather-table td { border: 1px solid #ddd; padding: 8px; }
         #weather-table th { background-color: #f4f4f4; text-align: left; }
         #weather-table td { text-align: center; }
-        #precipitation-visual { width: 45%; }
-        .circle { border-radius: 50%; background-color: #add8e6; text-align: center; color: white; }
+
+        #precipitation-visualization {
+            width: 35%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+        }
+
+        .circle {
+            border-radius: 50%; background-color: lightblue; text-align: center; margin: 10px; display: inline-block;
+            line-height: 1; vertical-align: middle; position: relative;
+        }
+        .circle span {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 14px;
+        }
         .custom-icon {
             font-family: 'Futura', sans-serif;
         }
     </style>
 </head>
 <body>
-    <h1>Weather in Sweden - Last Day</h1>
+    <h1 id="title">Weather in Sweden - Last Day</h1>
+    <p id="subtitle">Weather in Sweden - September 6th, 2024</p>
     <p>Click on each location on the map to see the last day's weather data.</p>
 
     <!-- Map Container -->
     <div id="map"></div>
 
-    <!-- Table and Visualization Container -->
+    <!-- Table and Precipitation Visualization Container -->
     <div id="table-container">
         <table id="weather-table">
             <thead>
@@ -49,10 +60,8 @@
             </tbody>
         </table>
 
-        <!-- Precipitation Circles -->
-        <div id="precipitation-visual">
-            <!-- Circles for each station will be inserted here -->
-        </div>
+        <!-- Precipitation Visualization -->
+        <div id="precipitation-visualization"></div>
     </div>
 
     <!-- Leaflet JavaScript -->
@@ -61,21 +70,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
     <script>
-        // Initialize the map centered on Sweden with extra margins
         var map = L.map('map', {
             center: [63.0, 16.0],
             zoom: 5,
-            minZoom: 5,
-            maxZoom: 8,
-            zoomControl: false // Disable zoom buttons
+            scrollWheelZoom: false,
+            dragging: false,
+            touchZoom: false,
+            doubleClickZoom: false,
+            zoomControl: false // Removed zoom control buttons
         });
 
-        // Set up the map tiles (OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Mapping of parameter codes to weather variables
         const parameterMapping = {
             19: "min temperature",
             20: "max temperature",
@@ -83,40 +91,53 @@
             5: "precipitation"
         };
 
-        // Function to load CSV data
         function loadCsvData() {
             Papa.parse('https://raw.githubusercontent.com/pablo-ferro/SwedishWeather/main/all_data.csv', {
                 download: true,
                 header: true,
                 complete: function(results) {
+                    console.log('CSV Data:', results.data);
                     plotMarkers(results.data);
                 },
                 error: function(error) {
-                    console.error('Error loading CSV:', error);  // Log any errors
+                    console.error('Error loading CSV:', error);
                 }
             });
         }
 
-        // Function to get color based on average temperature
-        function getColor(temp, minTemp, maxTemp) {
-            let ratio = (temp - minTemp) / (maxTemp - minTemp);
-            let r = Math.round(255 * ratio + 100);
-            let g = Math.round(0 * ratio + 100);
-            let b = Math.round(255 * (1 - ratio) + 150);
-            return `rgb(${r}, ${g}, ${b})`; // Darker soft blue and red tones
+        function interpolateColor(value, min, max) {
+            let ratio = (value - min) / (max - min);
+            let r, g, b;
+
+            if (ratio <= 0.5) {
+                r = Math.round(100 + ratio * (255 - 100));
+                g = Math.round(150 + ratio * (255 - 150));
+                b = 255;
+            } else {
+                r = 255;
+                g = Math.round(255 + (ratio - 0.5) * (100 - 255));
+                b = Math.round(255 + (ratio - 0.5) * (100 - 255));
+            }
+
+            return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // Function to plot markers on the map and update the table
         function plotMarkers(data) {
-            var stations = {};
-            var avgTemps = [];
-            var precipitations = [];
+            let stations = {};
+            let avgTemps = [];
+            let precipitations = [];
+            let refDate = "";
 
             data.forEach(function(row) {
                 var stationId = row.station;
                 var parameter = parseInt(row.parameter);
-                var lat = parseFloat(row.latitude.trim());
-                var lon = parseFloat(row.longitude.trim());
+                var lat = row.latitude ? parseFloat(row.latitude.trim()) : NaN;
+                var lon = row.longitude ? parseFloat(row.longitude.trim()) : NaN;
+
+                if (isNaN(lat) || isNaN(lon)) {
+                    console.warn(`Invalid lat/lon for station ${stationId}: (${lat}, ${lon})`);
+                    return;
+                }
 
                 if (!stations[stationId]) {
                     stations[stationId] = {
@@ -126,28 +147,30 @@
                         data: {}
                     };
                 }
-                
+
                 var variable = parameterMapping[parameter];
                 if (variable) {
                     stations[stationId].data[variable] = row.value;
                 }
 
-                if (parameter == 2) {
+                if (parameter === 2) {
                     avgTemps.push(parseFloat(row.value));
+                    if (!refDate) refDate = row.ref;
                 }
-                if (parameter == 5) {
-                    precipitations.push({ value: parseFloat(row.value), station: row.name });
+
+                if (parameter === 5) {
+                    precipitations.push({stationId: stationId, value: parseFloat(row.value)});
                 }
             });
 
-            var minTemp = Math.min(...avgTemps);
-            var maxTemp = Math.max(...avgTemps);
+            let minTemp = Math.min(...avgTemps);
+            let maxTemp = Math.max(...avgTemps);
 
-            // Plot markers on the map
+            let bounds = [];
             Object.keys(stations).forEach(function(stationId) {
                 var station = stations[stationId];
                 var avgTemp = parseFloat(station.data["avg temperature"]);
-                var color = getColor(avgTemp, minTemp, maxTemp);
+                var color = interpolateColor(avgTemp, minTemp, maxTemp);
 
                 var marker = L.marker([station.lat, station.lon], {
                     icon: L.divIcon({
@@ -158,30 +181,36 @@
                     })
                 }).addTo(map);
 
-                var weatherInfo = `
+                marker.bindPopup(`
                     <strong>${station.name}</strong><br>
                     Max Temp: ${station.data["max temperature"] || "N/A"} °C<br>
                     Min Temp: ${station.data["min temperature"] || "N/A"} °C<br>
                     Avg Temp: ${station.data["avg temperature"] || "N/A"} °C<br>
                     Precipitation: ${station.data["precipitation"] || "N/A"} mm
-                `;
-                marker.bindPopup(weatherInfo);
+                `);
+
+                bounds.push([station.lat, station.lon]);
             });
 
-            // Update the table and precipitation visualization
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [50, 50] }); // Adding padding to give space around markers
+            }
+
+            document.getElementById('title').innerText = `Weather in Sweden - ${refDate}`;
+            document.getElementById('subtitle').innerText = `Vädret i Sverige - ${refDate}`;
+
             updateTable(stations);
-            updatePrecipitation(precipitations);
+            updatePrecipitationVisualization(precipitations, stations);
         }
 
-        // Function to update the table with weather data
         function updateTable(stations) {
             var tableBody = document.querySelector('#weather-table tbody');
-            tableBody.innerHTML = ''; // Clear existing rows
+            tableBody.innerHTML = '';
 
             Object.keys(stations).forEach(function(stationId) {
                 var station = stations[stationId];
                 var row = document.createElement('tr');
-                
+
                 row.innerHTML = `
                     <td>${station.name}</td>
                     <td>${station.data["max temperature"] || "N/A"}</td>
@@ -194,26 +223,27 @@
             });
         }
 
-        // Function to visualize precipitation as blue circles
-        function updatePrecipitation(precipitations) {
-            var container = document.getElementById('precipitation-visual');
-            container.innerHTML = ''; // Clear previous circles
+        function updatePrecipitationVisualization(precipitations, stations) {
+            var container = document.getElementById('precipitation-visualization');
+            container.innerHTML = ''; // Clear previous content
 
-            precipitations.forEach(function(entry) {
-                var circleSize = Math.max(10, entry.value * 5); // Scale size based on precipitation
+            precipitations.forEach(function(item) {
+                var station = stations[item.stationId];
+                var size = Math.max(20, Math.min(100, item.value * 5)); // Circle size proportional to precipitation
+                var circle = document.createElement('div');
+                circle.classList.add('circle');
+                circle.style.width = size + 'px';
+                circle.style.height = size + 'px';
+                circle.title = `${station.name}: ${item.value} mm`; // Tooltip with station name and precipitation value
+                
+                var span = document.createElement('span');
+                span.innerText = `${item.value} mm`;
+                circle.appendChild(span);
 
-                var circleDiv = document.createElement('div');
-                circleDiv.className = 'circle';
-                circleDiv.style.width = `${circleSize}px`;
-                circleDiv.style.height = `${circleSize}px`;
-                circleDiv.title = `${entry.station}: ${entry.value} mm`;
-
-                circleDiv.innerText = entry.value;
-                container.appendChild(circleDiv);
+                container.appendChild(circle);
             });
         }
 
-        // Load the CSV data when the page is loaded
         loadCsvData();
     </script>
 </body>
