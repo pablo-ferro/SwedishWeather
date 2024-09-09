@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sweden Weather - Last Day</title>
     
+
+    <!-- Favicon -->
+    <link rel="icon" href="icon.png" type="image/png">
+
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
@@ -176,7 +181,7 @@
                     icon: L.divIcon({
                         className: 'custom-icon',
                         html: `<div style="background-color: ${color}; color: black; text-align: center; line-height: 20px; width: 20px; height: 20px; border-radius: 50%; font-size: 10px;">•</div>`,
-                        iconSize: [20, 20],
+                        iconSize: [40, 40],
                         iconAnchor: [10, 10]
                     })
                 }).addTo(map);
@@ -245,6 +250,14 @@
         }
 
         loadCsvData();
+
+
     </script>
+
+      <!-- Footer text -->
+    <footer>
+        <p>Weather data project created by Pablo Fernández, data analyst.<br>
+        Data from Sveriges meteorologiska och hydrologiska institut.</p>
+    </footer>
 </body>
 </html>
