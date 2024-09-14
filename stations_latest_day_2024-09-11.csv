@@ -1,0 +1,33 @@
+station,parameter,ref,value,quality,name,latitude,longitude,updated,parameter_name,parameter_summary,parameter_unit
+98230,19,2024-09-11,10.6,Y,Stockholm-Observatoriekullen A,59.3417,18.0549,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+97400,19,2024-09-11,9.0,Y,Stockholm-Arlanda Flygplats,59.6269,17.9545,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+97530,19,2024-09-11,9.6,Y,Uppsala Flygplats,59.9,17.593,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+96350,19,2024-09-11,9.9,Y,Västerås,59.6166,16.55,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+71420,19,2024-09-11,12.9,Y,Göteborg A,57.7,11.97,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+52350,19,2024-09-11,10.1,Y,Malmö A,55.6049,12.9843,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+140480,19,2024-09-11,12.9,Y,Umeå Flygplats,63.7947,20.2918,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+180940,19,2024-09-11,10.6,Y,Kiruna Flygplats,67.827,20.3387,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+162860,19,2024-09-11,13.8,Y,Luleå-Kallax Flygplats,65.543,22.124,2024-09-11 21:00:00,Lufttemperatur,"min, 1 gång per dygn",celsius
+98230,20,2024-09-11,15.9,Y,Stockholm-Observatoriekullen A,59.3417,18.0549,2024-09-11 21:00:00,Lufttemperatur,"max, 1 gång per dygn",celsius
+97400,20,2024-09-11,14.8,Y,Stockholm-Arlanda Flygplats,59.6269,17.9545,2024-09-11 21:00:00,Lufttemperatur,"max, 1 gång per dygn",celsius
+97530,20,2024-09-11,14.9,Y,Uppsala Flygplats,59.9,17.593,2024-09-11 21:00:00,Lufttemperatur,"max, 1 gång per dygn",celsius
+71420,20,2024-09-11,16.1,Y,Göteborg A,57.7,11.97,2024-09-11 21:00:00,Lufttemperatur,"max, 1 gång per dygn",celsius
+52350,20,2024-09-11,16.9,Y,Malmö A,55.6049,12.9843,2024-09-11 21:00:00,Lufttemperatur,"max, 1 gång per dygn",celsius
+140480,20,2024-09-11,17.4,Y,Umeå Flygplats,63.7947,20.2918,2024-09-11 21:00:00,Lufttemperatur,"max, 1 gång per dygn",celsius
+180940,20,2024-09-11,15.0,Y,Kiruna Flygplats,67.827,20.3387,2024-09-11 21:00:00,Lufttemperatur,"max, 1 gång per dygn",celsius
+162860,20,2024-09-11,16.2,Y,Luleå-Kallax Flygplats,65.543,22.124,2024-09-11 21:00:00,Lufttemperatur,"max, 1 gång per dygn",celsius
+98230,2,2024-09-10,16.8,Y,Stockholm-Observatoriekullen A,59.3417,18.0549,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+97400,2,2024-09-10,15.8,Y,Stockholm-Arlanda Flygplats,59.6269,17.9545,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+97530,2,2024-09-10,15.8,Y,Uppsala Flygplats,59.9,17.593,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+96350,2,2024-09-10,17.2,Y,Västerås,59.6166,16.55,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+71420,2,2024-09-10,15.7,Y,Göteborg A,57.7,11.97,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+52350,2,2024-09-10,16.1,Y,Malmö A,55.6049,12.9843,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+140480,2,2024-09-10,16.1,Y,Umeå Flygplats,63.7947,20.2918,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+180940,2,2024-09-10,13.4,Y,Kiruna Flygplats,67.827,20.3387,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+162860,2,2024-09-10,16.8,Y,Luleå-Kallax Flygplats,65.543,22.124,2024-09-11 21:00:00,Lufttemperatur,"medelvärde 1 dygn, 1 gång/dygn, kl 00",celsius
+98230,5,2024-09-10,0.2,G,Stockholm-Observatoriekullen A,59.3417,18.0549,2024-09-11 21:00:00,Nederbördsmängd,"summa 1 dygn, 1 gång/dygn, kl 06",millimeter
+97530,5,2024-09-10,0.0,G,Uppsala Flygplats,59.9,17.593,2024-09-11 21:00:00,Nederbördsmängd,"summa 1 dygn, 1 gång/dygn, kl 06",millimeter
+96350,5,2024-09-10,0.3,Y,Västerås,59.6166,16.55,2024-09-11 21:00:00,Nederbördsmängd,"summa 1 dygn, 1 gång/dygn, kl 06",millimeter
+71420,5,2024-09-10,7.1,G,Göteborg A,57.7,11.97,2024-09-11 21:00:00,Nederbördsmängd,"summa 1 dygn, 1 gång/dygn, kl 06",millimeter
+52350,5,2024-09-10,9.3,G,Malmö A,55.5715,13.0708,2024-09-11 21:00:00,Nederbördsmängd,"summa 1 dygn, 1 gång/dygn, kl 06",millimeter
+162860,5,2024-09-10,3.6,G,Luleå-Kallax Flygplats,65.543,22.124,2024-09-11 21:00:00,Nederbördsmängd,"summa 1 dygn, 1 gång/dygn, kl 06",millimeter
